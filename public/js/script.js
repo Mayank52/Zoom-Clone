@@ -6,20 +6,18 @@ var peer = new Peer(undefined, {
 });
 
 const videoGrid = document.querySelector("#video-grid");
-let myUserId;
-
-//create a video element and mute it
 const myVideo = document.createElement("video");
-myVideo.muted = true;
-
+let myUserId;
 let myVideoStream;
 let isFirstCall = true;
+myVideo.muted = true;
 
+//Audio/Video========================================================================
 //to get video and audio input from browser => returns a Promise
 navigator.mediaDevices
   .getUserMedia({
     video: true,
-    audio: false,
+    audio: true,
   })
   .then((stream) => {
     myVideoStream = stream;
@@ -32,7 +30,6 @@ navigator.mediaDevices
     console.log(err);
   });
 
-//Audio/Video======================================
 peer.on("open", (id) => {
   console.log("My id:", id);
   myVideo.id = id;
@@ -78,7 +75,6 @@ socket.on("user-disconnected", (userId) => {
   removeVideo(userId);
 });
 
-//Utility Functions=====================================================
 const connectToNewUser = (userId, stream) => {
   const call = peer.call(userId, stream);
   // console.log(call);
@@ -116,6 +112,67 @@ const removeVideo = (id) => {
   videoContainer.remove();
 };
 
+//Control Buttons====================================================================
+let audioButton = document.querySelector(".audio-btn");
+let videoButton = document.querySelector(".video-btn");
+
+audioButton.addEventListener("click", () => {
+  console.log(myVideoStream);
+  let enabled = myVideoStream.getAudioTracks()[0].enabled;
+  if (enabled) {
+    myVideoStream.getAudioTracks()[0].enabled = false;
+    setUnmuteAudio();
+  } else {
+    myVideoStream.getAudioTracks()[0].enabled = true;
+    setMuteAudio();
+  }
+});
+
+videoButton.addEventListener("click", () => {
+  console.log(myVideoStream.getVideoTracks());
+  let enabled = myVideoStream.getVideoTracks()[0].enabled;
+  if (enabled) {
+    myVideoStream.getVideoTracks()[0].enabled = false;
+    setPlayVideo();
+  } else {
+    myVideoStream.getVideoTracks()[0].enabled = true;
+    setStopVideo();
+  }
+});
+
+const setMuteAudio = () => {
+  let muteBtn = `
+    <i class="fas fa-microphone"></i>
+    Mute
+  `;
+
+  audioButton.innerHTML = muteBtn;
+};
+const setUnmuteAudio = () => {
+  let unmuteBtn = `
+    <i class="fas fa-microphone-slash mute-audio"></i>
+    Unmute
+  `;
+
+  audioButton.innerHTML = unmuteBtn;
+};
+const setPlayVideo = () => {
+  let stopVideoBtn = `
+    <i class="fas fa-video-slash stop-video"></i>
+    Play Video
+  `;
+
+  videoButton.innerHTML = stopVideoBtn;
+};
+const setStopVideo = () => {
+  let playVideoBtn = `
+    <i class="fas fa-video"></i>
+    Stop Video
+  `;
+
+  videoButton.innerHTML = playVideoBtn;
+};
+
 //Chat===========================================================
 socket.on("msg-received", (msg, userId) => {
   receiveMessage(msg, userId);
@@ -146,4 +203,6 @@ let receiveMessage = (msg, userId) => {
   `;
 
   messagesContainer.append(newChatContainer);
+
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
 };

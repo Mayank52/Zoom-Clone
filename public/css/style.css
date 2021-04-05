@@ -72,21 +72,34 @@ video {
     text-align: center;
     color: white;
 }
-.chat-container{
-}
+
 .messages{
     color: white;
     flex-grow: 1;
+    overflow-y: scroll;
 }
 .chat-input{
     padding: 10px 5px;
     display: flex;
+    border-top: 1px solid #3D3D42;
 }
 .chat-input input{
     background: transparent;
     flex-grow: 1;
     border: none;
     color: #F5F5F5;
+}
+input:focus{
+  outline: none;
+}
+.audio-btn{
+  width: 70px;
+}
+.video-btn{
+  width: 140px;
+}
+.mute-audio, .stop-video{
+  color: red;
 }
 .hide{
     display: none;
