@@ -4,9 +4,6 @@ const app = express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 
-// const cors = require('cors')
-// app.use(cors())
-
 //peerJS -> to send and receive video and audio in realtime
 const { ExpressPeerServer } = require("peer");
 const peerServer = ExpressPeerServer(http, {
@@ -40,8 +37,6 @@ io.on("connection", (socket) => {
     io.in(roomId).emit("msg-received", msg, userId);
   });
 
-  //cant get the room id if person does not leave the meeting and presses the close button
-  //possible solution -> keep a list of {socket id : (user id, room, id)} then use the socket id of disconnected user
   socket.on("disconnect", (roomId, userId) => {
     console.log("user left");
     socket.to(roomId).emit("user-disconnected", userId);
