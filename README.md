@@ -4,5 +4,5 @@
 - CSS (Styling)
 - Node.js (Backend)
 - Express.js (Server)
-- Socket.io (Realtime Communication)
-- Peer.js (Audio/Video Communication)
+- Socket.io (Realtime Chat)
+- Peer.js (Realtime Audio/Video)
