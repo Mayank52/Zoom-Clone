@@ -2,9 +2,11 @@ const socket = io("/");
 var peer = new Peer(undefined, {
   path: "/peerjs",
   host: "/",
-  port: "443",
+  port: "3000",
 });
+
+//Port : 443 for heroku
 
 let myUserId;
 let myVideoStream;
-let isFirstCall = true;
+const roomId = ROOM_ID;

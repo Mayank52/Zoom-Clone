@@ -32,7 +32,10 @@
   justify-content: center;
   flex-wrap: wrap;
 }
-
+.user-video-container img{
+  height: 200px;
+  object-fit: contain;
+}
 video {
   height: 200px;
   object-fit: contain;

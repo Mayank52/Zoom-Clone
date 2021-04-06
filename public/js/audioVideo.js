@@ -1,6 +1,7 @@
 const videoGrid = document.querySelector("#video-grid");
 const myVideo = document.createElement("video");
 myVideo.muted = true;
+let isFirstCall = true;
 
 //to get video and audio input from browser => returns a Promise
 navigator.mediaDevices
@@ -10,18 +11,18 @@ navigator.mediaDevices
   })
   .then((stream) => {
     myVideoStream = stream;
-    console.log("my video set");
 
     //add my video to DOM
-    addVideoStream(myVideo, stream, "my video initially");
-  })
-  .catch((err) => {
-    console.log(err);
+    addUserImg(myUserId);
+    addVideoStream(myVideo, stream, myUserId, "initially video added");
   });
+// .catch((err) => {
+//   console.log(err);
+// });
 
 peer.on("open", (id) => {
   console.log("My id:", id);
-  myVideo.id = id;
+  // myVideo.setAttribute("userid", id);
   myUserId = id;
   socket.emit("join-room", ROOM_ID, id);
   console.log("Room Joined");
@@ -29,7 +30,6 @@ peer.on("open", (id) => {
 
 //accept call from user
 peer.on("call", (call) => {
-  // console.log(call.peer);
   let userId = call.peer;
   console.log("call accepted from: ", call.peer);
 
@@ -38,14 +38,15 @@ peer.on("call", (call) => {
   setTimeout(() => {
     console.log("My video stream before answering the call: ", myVideoStream);
     call.answer(myVideoStream);
+
+    //add user image
+    addUserImg(userId);
+
     const video = document.createElement("video");
-    video.id = userId;
 
     //show the video of user who we answered
     call.on("stream", (userVideoStream) => {
-      // Show stream in some video/canvas element.
-      addVideoStream(video, userVideoStream, "accepted call from user");
-      // console.log("Call Accepted");
+      addVideoStream(video, userVideoStream, userId, "peer.on call ");
     });
 
     isFirstCall = false;
@@ -66,25 +67,24 @@ socket.on("user-disconnected", (userId) => {
 
 const connectToNewUser = (userId, stream) => {
   const call = peer.call(userId, stream);
-  // console.log(call);
   console.log("Peer called");
+
+  //add user image
+  addUserImg(userId);
+
   const video = document.createElement("video");
-  video.id = userId;
 
   //show the video of user we called
   call.on("stream", (userVideoStream) => {
-    // Show stream in some video/canvas element.
-    console.log(userVideoStream);
-    console.log(`${userId} Connected!!!!!!!!!!!!`);
-    addVideoStream(video, userVideoStream, "new user connected");
+    console.log("!!!!!!!!!!!!!!!!", userVideoStream);
+    addVideoStream(video, userVideoStream, userId, "connect to new user");
   });
 };
 
 //function to diplay the video in UI
-const addVideoStream = (video, stream, src) => {
-  console.log("Called addVideoStream: ", src);
-  console.log(stream);
+const addVideoStream = (video, stream, userId, src) => {
   //set source for the video element as the userVideo input
+  console.log("video added", src);
   video.srcObject = stream;
 
   //when the whole data is received then play the video
@@ -92,11 +92,65 @@ const addVideoStream = (video, stream, src) => {
     video.play();
   });
 
+  video.setAttribute("userid", userId);
+
   //add the created video element to the video grid div
-  videoGrid.append(video);
+  let userDiv = document.querySelector(
+    `.user-video-container[userid = a${userId}]`
+  );
+  userDiv.append(video);
+  // videoGrid.append(video);
 };
 
-const removeVideo = (id) => {
-  let videoContainer = document.querySelector(`${id}`);
-  videoContainer.remove();
+const addUserImg = (userId) => {
+  let userDiv = document.createElement("div");
+  userDiv.classList.add("user-video-container");
+  userDiv.setAttribute("userid", "a" + userId);
+
+  let img = document.createElement("img");
+  img.src = "./images/user.png";
+  img.setAttribute("userid", userId);
+  img.style.display = "none";
+
+  userDiv.append(img);
+  videoGrid.append(userDiv);
+};
+
+const removeVideo = (userId) => {
+  let userDiv = document.querySelector(
+    `.user-video-container[userid = a${userId}]`
+  );
+  userDiv.remove();
+};
+
+socket.on("play-video", (userId) => {
+  playVideo(userId);
+});
+
+socket.on("stop-video", (userId) => {
+  stopVideo(userId);
+});
+
+const playVideo = (userId) => {
+  let videoTag = document.querySelector(
+    `.user-video-container[userid = a${userId}] video`
+  );
+  let imgTag = document.querySelector(
+    `.user-video-container[userid = a${userId}] img`
+  );
+
+  videoTag.style.display = "block";
+  imgTag.style.display = "none";
+};
+
+const stopVideo = (userId) => {
+  let videoTag = document.querySelector(
+    `.user-video-container[userid = a${userId}] video`
+  );
+  let imgTag = document.querySelector(
+    `.user-video-container[userid = a${userId}] img`
+  );
+
+  videoTag.style.display = "none";
+  imgTag.style.display = "block";
 };

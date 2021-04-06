@@ -11,7 +11,6 @@ socket.on("msg-received", (msg, userId) => {
       `;
 
   messagesContainer.append(newChatContainer);
-
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 });
 
