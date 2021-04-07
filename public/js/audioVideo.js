@@ -154,3 +154,19 @@ const stopVideo = (userId) => {
   videoTag.style.display = "none";
   imgTag.style.display = "block";
 };
+
+socket.on("update-room-users", (roomUsers) => {
+  console.log(roomUsers);
+  //update in video containers and participants list
+
+  //for all users whose video is disabled show there profile picture
+  roomUsers.forEach((user) => {
+    if (user.video == false) {
+      let userImgTag = document.querySelector(
+        `.user-video-container[userid = a${user.userId}] img`
+      );
+
+      userImgTag.style.display = "block";
+    }
+  });
+});

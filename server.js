@@ -5,7 +5,7 @@ const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 
 let db = [];
-//{socketId, peerId, roomId, username}
+//{socketId, peerId, roomId, username, video: true}
 
 //peerJS -> to send and receive video and audio in realtime
 const { ExpressPeerServer } = require("peer");
@@ -36,9 +36,15 @@ io.on("connection", (socket) => {
       userId: userId,
       socketId: socket.id,
       roomId: roomId,
+      video: true,
     });
 
     socket.to(roomId).emit("user-connected", userId);
+
+    let roomUsers = db.filter((user) => {return user.roomId == roomId});
+    console.log(roomUsers);
+
+    socket.emit("update-room-users", roomUsers);
     console.log(`${userId} joined ${roomId}`);
   });
 
@@ -47,12 +53,16 @@ io.on("connection", (socket) => {
     io.in(roomId).emit("msg-received", msg, userId);
   });
 
-  socket.on('play-video', (roomId, userId)=>{
-    io.in(roomId).emit('play-video', userId);
-  })
-  socket.on('stop-video', (roomId, userId)=>{
-    io.in(roomId).emit('stop-video', userId);
-  })
+  socket.on("play-video", (roomId, userId) => {
+    let user = db.indexOf(userId);
+    user.video = true;
+    io.in(roomId).emit("play-video", userId);
+  });
+  socket.on("stop-video", (roomId, userId) => {
+    let user = db.indexOf(userId);
+    user.video = false;
+    io.in(roomId).emit("stop-video", userId);
+  });
 
   socket.on("disconnect", (roomId, userId) => {
     console.log("user left", socket.id);
